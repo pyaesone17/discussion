@@ -1,0 +1,34 @@
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_username (username),
+    INDEX idx_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS topics (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS posts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    topic_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_topic_id (topic_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,12 @@
+with-expecter: true
+all: true
+dir: "{{.InterfaceDir}}/mocks"
+filename: "mock_{{.InterfaceName}}.go"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: mocks
+packages:
+  discussion-forum/internal/service:
+    interfaces:
+      UserRepositoryInterface:
+      TopicRepositoryInterface:
+      PostRepositoryInterface:

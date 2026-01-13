@@ -1,0 +1,41 @@
+package api
+
+import (
+	"discussion-forum/internal/service"
+
+	"github.com/gin-gonic/gin"
+)
+
+func SetupRoutes(
+	router *gin.Engine,
+	userService *service.UserService,
+	topicService *service.TopicService,
+	postService *service.PostService,
+) {
+	api := router.Group("/api/v1")
+
+	userHandler := NewUserHandler(userService)
+	api.POST("/users", userHandler.Create)
+	api.GET("/users/:id", userHandler.GetByID)
+	api.GET("/users", userHandler.GetAll)
+	api.PUT("/users/:id", userHandler.Update)
+	api.DELETE("/users/:id", userHandler.Delete)
+
+	topicHandler := NewTopicHandler(topicService)
+	api.POST("/topics", topicHandler.Create)
+	api.GET("/topics", topicHandler.GetAll)
+	api.GET("/topics/:id", topicHandler.GetByID)
+	api.PUT("/topics/:id", topicHandler.Update)
+	api.DELETE("/topics/:id", topicHandler.Delete)
+
+	postHandler := NewPostHandler(postService)
+	api.POST("/posts", postHandler.Create)
+	api.GET("/posts/:id", postHandler.GetByID)
+	api.GET("/topics/:id/posts", postHandler.GetByTopicID)
+	api.PUT("/posts/:id", postHandler.Update)
+	api.DELETE("/posts/:id", postHandler.Delete)
+
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+}
