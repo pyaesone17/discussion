@@ -18,6 +18,7 @@ type TopicRepositoryInterface interface {
 	GetAll() ([]*models.Topic, error)
 	Update(id int64, req *models.UpdateTopicRequest) (*models.Topic, error)
 	Delete(id int64) error
+	Search(query string) ([]*models.Topic, error)
 }
 
 type PostRepositoryInterface interface {

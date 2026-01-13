@@ -24,6 +24,7 @@ func SetupRoutes(
 	topicHandler := NewTopicHandler(topicService)
 	api.POST("/topics", topicHandler.Create)
 	api.GET("/topics", topicHandler.GetAll)
+	api.GET("/topics/search", topicHandler.Search)
 	api.GET("/topics/:id", topicHandler.GetByID)
 	api.PUT("/topics/:id", topicHandler.Update)
 	api.DELETE("/topics/:id", topicHandler.Delete)
