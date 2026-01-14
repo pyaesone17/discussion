@@ -469,3 +469,147 @@ func TestTopicService_CacheInvalidation(t *testing.T) {
 
 	mockRepo.AssertExpectations(t)
 }
+
+// TestTopicService_Search tests the Search method
+func TestTopicService_Search(t *testing.T) {
+	tests := []struct {
+		name        string
+		query       string
+		mockReturn  []*models.Topic
+		mockError   error
+		expectError bool
+		shouldCall  bool
+	}{
+		{
+			name:        "empty query returns empty array",
+			query:       "",
+			mockReturn:  nil,
+			mockError:   nil,
+			expectError: false,
+			shouldCall:  false, // Repository should NOT be called for empty query
+		},
+		{
+			name:  "successful search with results",
+			query: "performance",
+			mockReturn: []*models.Topic{
+				{
+					ID:        1,
+					Title:     "Performance optimization tips",
+					UserID:    1,
+					Username:  "user1",
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+				},
+				{
+					ID:        2,
+					Title:     "Database performance tuning",
+					UserID:    2,
+					Username:  "user2",
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+				},
+			},
+			mockError:   nil,
+			expectError: false,
+			shouldCall:  true,
+		},
+		{
+			name:        "search with no results",
+			query:       "nonexistent",
+			mockReturn:  []*models.Topic{},
+			mockError:   nil,
+			expectError: false,
+			shouldCall:  true,
+		},
+		{
+			name:        "repository error",
+			query:       "test",
+			mockReturn:  nil,
+			mockError:   errors.New("database connection error"),
+			expectError: true,
+			shouldCall:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := mocks.NewMockTopicRepositoryInterface(t)
+			redisClient, mr := setupTopicTestRedis(t)
+			defer mr.Close()
+
+			service := NewTopicServiceWithInterface(mockRepo, redisClient)
+
+			if tt.shouldCall {
+				mockRepo.On("Search", tt.query).Return(tt.mockReturn, tt.mockError)
+			}
+
+			result, err := service.Search(tt.query)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, result)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+				if tt.mockReturn != nil {
+					assert.Equal(t, len(tt.mockReturn), len(result))
+				}
+			}
+
+			mockRepo.AssertExpectations(t)
+		})
+	}
+}
+
+// TestTopicService_Search_WithCache tests cache hit scenario for search
+func TestTopicService_Search_WithCache(t *testing.T) {
+	mockRepo := mocks.NewMockTopicRepositoryInterface(t)
+	redisClient, mr := setupTopicTestRedis(t)
+	defer mr.Close()
+
+	service := NewTopicServiceWithInterface(mockRepo, redisClient)
+
+	topics := []*models.Topic{
+		{
+			ID:        1,
+			Title:     "Go programming best practices",
+			UserID:    1,
+			Username:  "user1",
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+		{
+			ID:        2,
+			Title:     "Getting started with Go",
+			UserID:    2,
+			Username:  "user2",
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
+
+	query := "Go programming"
+
+	// First call - cache miss (repository should be called)
+	mockRepo.On("Search", query).Return(topics, nil).Once()
+
+	result1, err := service.Search(query)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(result1))
+	assert.Equal(t, topics[0].Title, result1[0].Title)
+
+	// Second call with same query - cache hit (repository should NOT be called)
+	result2, err := service.Search(query)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(result2))
+	assert.Equal(t, topics[0].Title, result2[0].Title)
+
+	// Third call with different query - should call repository
+	mockRepo.On("Search", "different").Return([]*models.Topic{}, nil).Once()
+	result3, err := service.Search("different")
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(result3))
+
+	// Verify repository was called exactly twice (once for each unique query)
+	mockRepo.AssertExpectations(t)
+}
