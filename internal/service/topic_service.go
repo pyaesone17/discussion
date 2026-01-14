@@ -112,3 +112,31 @@ func (s *TopicService) invalidateCache() {
 	ctx := context.Background()
 	s.redis.Del(ctx, "topics:all")
 }
+
+func (s *TopicService) Search(query string) ([]*models.Topic, error) {
+	if query == "" {
+		return []*models.Topic{}, nil
+	}
+
+	ctx := context.Background()
+	cacheKey := fmt.Sprintf("topics:search:%s", query)
+
+	cached, err := s.redis.Get(ctx, cacheKey).Result()
+	if err == nil {
+		var topics []*models.Topic
+		if json.Unmarshal([]byte(cached), &topics) == nil {
+			return topics, nil
+		}
+	}
+
+	topics, err := s.repo.Search(query)
+	if err != nil {
+		return nil, err
+	}
+
+	if data, err := json.Marshal(topics); err == nil {
+		s.redis.Set(ctx, cacheKey, data, 3*time.Minute)
+	}
+
+	return topics, nil
+}

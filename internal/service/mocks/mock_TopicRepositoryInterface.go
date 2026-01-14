@@ -240,6 +240,64 @@ func (_c *MockTopicRepositoryInterface_GetByID_Call) RunAndReturn(run func(int64
 	return _c
 }
 
+// Search provides a mock function with given fields: query
+func (_m *MockTopicRepositoryInterface) Search(query string) ([]*models.Topic, error) {
+	ret := _m.Called(query)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Search")
+	}
+
+	var r0 []*models.Topic
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) ([]*models.Topic, error)); ok {
+		return rf(query)
+	}
+	if rf, ok := ret.Get(0).(func(string) []*models.Topic); ok {
+		r0 = rf(query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Topic)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockTopicRepositoryInterface_Search_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Search'
+type MockTopicRepositoryInterface_Search_Call struct {
+	*mock.Call
+}
+
+// Search is a helper method to define mock.On call
+//   - query string
+func (_e *MockTopicRepositoryInterface_Expecter) Search(query interface{}) *MockTopicRepositoryInterface_Search_Call {
+	return &MockTopicRepositoryInterface_Search_Call{Call: _e.mock.On("Search", query)}
+}
+
+func (_c *MockTopicRepositoryInterface_Search_Call) Run(run func(query string)) *MockTopicRepositoryInterface_Search_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *MockTopicRepositoryInterface_Search_Call) Return(_a0 []*models.Topic, _a1 error) *MockTopicRepositoryInterface_Search_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockTopicRepositoryInterface_Search_Call) RunAndReturn(run func(string) ([]*models.Topic, error)) *MockTopicRepositoryInterface_Search_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function with given fields: id, req
 func (_m *MockTopicRepositoryInterface) Update(id int64, req *models.UpdateTopicRequest) (*models.Topic, error) {
 	ret := _m.Called(id, req)

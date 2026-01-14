@@ -85,3 +85,32 @@ func (r *TopicRepository) Delete(id int64) error {
 	_, err := r.db.Exec("DELETE FROM topics WHERE id = ?", id)
 	return err
 }
+
+func (r *TopicRepository) Search(query string) ([]*models.Topic, error) {
+	if query == "" {
+		return []*models.Topic{}, nil
+	}
+
+	rows, err := r.db.Query(`
+		SELECT t.id, t.title, t.user_id, u.username, t.created_at, t.updated_at
+		FROM topics t
+		LEFT JOIN users u ON t.user_id = u.id
+		WHERE MATCH(t.title) AGAINST(? IN NATURAL LANGUAGE MODE)
+		ORDER BY MATCH(t.title) AGAINST(? IN NATURAL LANGUAGE MODE) DESC
+	`, query, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	topics := []*models.Topic{}
+	for rows.Next() {
+		topic := &models.Topic{}
+		if err := rows.Scan(&topic.ID, &topic.Title, &topic.UserID, &topic.Username, &topic.CreatedAt, &topic.UpdatedAt); err != nil {
+			return nil, err
+		}
+		topics = append(topics, topic)
+	}
+
+	return topics, nil
+}

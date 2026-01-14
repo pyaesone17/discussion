@@ -47,7 +47,8 @@ Handlers (API Layer) → Services (Business Logic) → Repositories (Data Access
 │       └── post_service.go
 ├── migrations/                      # SQL migrations
 │   ├── 01_init.sql                 # Schema initialization
-│   └── 02_seed.sql                 # Sample data
+│   ├── 02_seed.sql                 # Sample data
+│   └── 03_add_fulltext_search.sql  # FULLTEXT index for topics
 ├── docker-compose.yml               # Multi-container setup
 ├── Dockerfile                       # Application container
 └── README.md                        # Project documentation
@@ -101,6 +102,7 @@ PUT    /api/v1/users/:id             - Update user
 DELETE /api/v1/users/:id             - Delete user
 POST   /api/v1/topics                - Create topic
 GET    /api/v1/topics                - List topics
+GET    /api/v1/topics/search?q=query - Search topics (full-text)
 GET    /api/v1/topics/:id            - Get topic
 PUT    /api/v1/topics/:id            - Update topic
 DELETE /api/v1/topics/:id            - Delete topic
@@ -180,6 +182,7 @@ Redis is used for caching with TTLs:
 - Topic data: 5 minutes
 - Post data by topic: 3 minutes
 - User/topic lists: 2 minutes
+- Topic search results: 3 minutes
 
 Cache invalidation happens on:
 - Create operations - clear list caches
@@ -195,8 +198,54 @@ MySQL connection with `parseTime=true` for automatic time parsing.
 Located in `/migrations/` directory:
 - `01_init.sql` - Creates tables (users, topics, posts)
 - `02_seed.sql` - Inserts sample data
+- `03_add_fulltext_search.sql` - Adds FULLTEXT index for topic search
 
 Migrations run automatically when MySQL container starts via docker-entrypoint-initdb.d.
+
+## Full-Text Search
+
+### Overview
+Topics support full-text search using MySQL's native FULLTEXT indexing. The search uses natural language mode with relevance ranking.
+
+### Implementation Details
+- **Endpoint**: `GET /api/v1/topics/search?q={query}`
+- **Query Parameter**: `q` - The search query string
+- **Search Mode**: MySQL NATURAL LANGUAGE MODE
+- **Indexed Column**: `topics.title`
+- **Results**: Ordered by relevance score (most relevant first)
+- **Caching**: Search results cached in Redis for 3 minutes
+
+### How It Works
+1. Handler extracts query parameter from `?q=` in topic_handler.go:104
+2. Service checks Redis cache using key `topics:search:{query}` in topic_service.go:116
+3. Repository executes FULLTEXT query with `MATCH...AGAINST` in topic_repository.go:89
+4. Results are sorted by relevance score automatically
+5. Empty query returns empty array (no results)
+
+### Database Schema
+FULLTEXT index is created on the `topics.title` column:
+```sql
+ALTER TABLE topics ADD FULLTEXT INDEX idx_title_fulltext (title);
+```
+
+### Example Queries
+```bash
+# Search for topics about "Go"
+curl "http://localhost:8080/api/v1/topics/search?q=Go"
+
+# Search for topics about "performance optimization"
+curl "http://localhost:8080/api/v1/topics/search?q=performance+optimization"
+
+# Empty query returns empty array
+curl "http://localhost:8080/api/v1/topics/search?q="
+```
+
+### Notes
+- Search is case-insensitive
+- MySQL's natural language search ignores common words (stopwords)
+- Results ranked by relevance, not chronologically
+- Minimum word length for indexing is typically 4 characters (MySQL default)
+- Route must be registered before `GET /topics/:id` to avoid conflicts (routes.go:27)
 
 ## Common Issues & Solutions
 
@@ -231,6 +280,9 @@ curl http://localhost:8080/api/v1/topics
 # Get posts for a topic
 curl http://localhost:8080/api/v1/topics/1/posts
 
+# Search topics
+curl "http://localhost:8080/api/v1/topics/search?q=performance"
+
 # Create a user
 curl -X POST http://localhost:8080/api/v1/users \
   -H "Content-Type: application/json" \
@@ -248,7 +300,6 @@ curl -X POST http://localhost:8080/api/v1/users \
 ## Future Enhancements (Not Yet Implemented)
 - Authentication/Authorization
 - Pagination for list endpoints
-- Search functionality
 - Input validation middleware
 - Structured logging
 - Unit/integration tests
@@ -261,3 +312,4 @@ curl -X POST http://localhost:8080/api/v1/users \
 - Server runs on port 8080 by default
 - MySQL is on 3306, Redis on 6379
 - Sample data includes 3 users, 3 topics, and several posts
+- Full-text search endpoint (`/topics/search`) must be registered before parameterized routes (`/topics/:id`) to avoid routing conflicts
