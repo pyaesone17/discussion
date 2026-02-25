@@ -6,7 +6,18 @@
       "Bash(go test:*)",
       "Bash(mockery)",
       "Bash(go install:*)",
-      "Bash(~/go/bin/mockery:*)"
+      "Bash(~/go/bin/mockery:*)",
+      "Bash(git push:*)",
+      "Bash(docker ps:*)",
+      "Bash(curl:*)",
+      "Bash(go vet:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker exec:*)",
+      "Bash(node --version:*)",
+      "Bash(npm --version)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd React frontend application with full-text search integration\n\nImplement a production-ready React application that provides a user-friendly\ninterface for the Discussion Forum API with the following features:\n\nFeatures:\n- Topic browsing with MySQL full-text search integration\n- Topic and post creation with real-time updates\n- User selection with localStorage persistence\n- Responsive design with Tailwind CSS\n- Toast notifications for user feedback\n- WCAG 2.1 Level A accessibility compliance\n\nTechnical Stack:\n- React 18.3 + TypeScript \\(strict mode\\)\n- Vite 5.0 for fast HMR and build\n- React Query 5.17 for server state management\n- React Router 6.22 for client-side routing\n- Axios with error interceptors\n- Tailwind CSS 3.4 for styling\n\nArchitecture:\n- Pragmatic hybrid: React Query for server state, Context API for client\n- Clean separation: API layer → Components → Pages\n- TypeScript types mirror Go backend models\n- Cache strategy matches backend Redis TTLs \\(2-5 minutes\\)\n\nQuality Improvements:\n- Fixed memory leak in ToastContext with proper timeout cleanup\n- Fixed search race condition using current query value\n- Added invalid topic ID validation \\(NaN check\\)\n- Improved modal accessibility with ARIA attributes and Escape key handler\n- Added performance optimizations with useMemo and useCallback\n- CORS fix: Use Vite proxy instead of direct API calls\n\nProject includes:\n- 50+ TypeScript/TSX files \\(~2,400 lines of code\\)\n- Comprehensive README with setup instructions\n- Complete implementation summary documentation\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(gh pr create:*)"
     ]
   }
 }
