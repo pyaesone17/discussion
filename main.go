@@ -26,14 +26,16 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	topicRepo := repository.NewTopicRepository(db)
 	postRepo := repository.NewPostRepository(db)
+	voteRepo := repository.NewVoteRepository(db)
 
 	userService := service.NewUserService(userRepo, redisClient)
 	topicService := service.NewTopicService(topicRepo, redisClient)
 	postService := service.NewPostService(postRepo, redisClient)
+	voteService := service.NewVoteService(voteRepo, postRepo, redisClient)
 
 	router := gin.Default()
 
-	api.SetupRoutes(router, userService, topicService, postService)
+	api.SetupRoutes(router, userService, topicService, postService, voteService)
 
 	port := os.Getenv("PORT")
 	if port == "" {

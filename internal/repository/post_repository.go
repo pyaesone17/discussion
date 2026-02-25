@@ -33,11 +33,12 @@ func (r *PostRepository) Create(post *models.CreatePostRequest) (*models.Post, e
 func (r *PostRepository) GetByID(id int64) (*models.Post, error) {
 	post := &models.Post{}
 	err := r.db.QueryRow(`
-		SELECT p.id, p.topic_id, p.user_id, u.username, p.content, p.created_at, p.updated_at
+		SELECT p.id, p.topic_id, p.user_id, u.username, p.content, p.created_at, p.updated_at,
+			COALESCE((SELECT SUM(value) FROM votes WHERE votable_type='post' AND votable_id=p.id), 0) AS score
 		FROM posts p
 		LEFT JOIN users u ON p.user_id = u.id
 		WHERE p.id = ?
-	`, id).Scan(&post.ID, &post.TopicID, &post.UserID, &post.Username, &post.Content, &post.CreatedAt, &post.UpdatedAt)
+	`, id).Scan(&post.ID, &post.TopicID, &post.UserID, &post.Username, &post.Content, &post.CreatedAt, &post.UpdatedAt, &post.Score)
 
 	if err != nil {
 		return nil, err
@@ -48,7 +49,8 @@ func (r *PostRepository) GetByID(id int64) (*models.Post, error) {
 
 func (r *PostRepository) GetByTopicID(topicID int64) ([]*models.Post, error) {
 	rows, err := r.db.Query(`
-		SELECT p.id, p.topic_id, p.user_id, u.username, p.content, p.created_at, p.updated_at
+		SELECT p.id, p.topic_id, p.user_id, u.username, p.content, p.created_at, p.updated_at,
+			COALESCE((SELECT SUM(value) FROM votes WHERE votable_type='post' AND votable_id=p.id), 0) AS score
 		FROM posts p
 		LEFT JOIN users u ON p.user_id = u.id
 		WHERE p.topic_id = ?
@@ -62,7 +64,7 @@ func (r *PostRepository) GetByTopicID(topicID int64) ([]*models.Post, error) {
 	posts := []*models.Post{}
 	for rows.Next() {
 		post := &models.Post{}
-		if err := rows.Scan(&post.ID, &post.TopicID, &post.UserID, &post.Username, &post.Content, &post.CreatedAt, &post.UpdatedAt); err != nil {
+		if err := rows.Scan(&post.ID, &post.TopicID, &post.UserID, &post.Username, &post.Content, &post.CreatedAt, &post.UpdatedAt, &post.Score); err != nil {
 			return nil, err
 		}
 		posts = append(posts, post)

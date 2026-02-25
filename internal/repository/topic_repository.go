@@ -33,11 +33,12 @@ func (r *TopicRepository) Create(topic *models.CreateTopicRequest) (*models.Topi
 func (r *TopicRepository) GetByID(id int64) (*models.Topic, error) {
 	topic := &models.Topic{}
 	err := r.db.QueryRow(`
-		SELECT t.id, t.title, t.user_id, u.username, t.created_at, t.updated_at
+		SELECT t.id, t.title, t.user_id, u.username, t.created_at, t.updated_at,
+			COALESCE((SELECT SUM(value) FROM votes WHERE votable_type='topic' AND votable_id=t.id), 0) AS score
 		FROM topics t
 		LEFT JOIN users u ON t.user_id = u.id
 		WHERE t.id = ?
-	`, id).Scan(&topic.ID, &topic.Title, &topic.UserID, &topic.Username, &topic.CreatedAt, &topic.UpdatedAt)
+	`, id).Scan(&topic.ID, &topic.Title, &topic.UserID, &topic.Username, &topic.CreatedAt, &topic.UpdatedAt, &topic.Score)
 
 	if err != nil {
 		return nil, err
@@ -48,7 +49,8 @@ func (r *TopicRepository) GetByID(id int64) (*models.Topic, error) {
 
 func (r *TopicRepository) GetAll() ([]*models.Topic, error) {
 	rows, err := r.db.Query(`
-		SELECT t.id, t.title, t.user_id, u.username, t.created_at, t.updated_at
+		SELECT t.id, t.title, t.user_id, u.username, t.created_at, t.updated_at,
+			COALESCE((SELECT SUM(value) FROM votes WHERE votable_type='topic' AND votable_id=t.id), 0) AS score
 		FROM topics t
 		LEFT JOIN users u ON t.user_id = u.id
 		ORDER BY t.created_at DESC
@@ -61,7 +63,7 @@ func (r *TopicRepository) GetAll() ([]*models.Topic, error) {
 	topics := []*models.Topic{}
 	for rows.Next() {
 		topic := &models.Topic{}
-		if err := rows.Scan(&topic.ID, &topic.Title, &topic.UserID, &topic.Username, &topic.CreatedAt, &topic.UpdatedAt); err != nil {
+		if err := rows.Scan(&topic.ID, &topic.Title, &topic.UserID, &topic.Username, &topic.CreatedAt, &topic.UpdatedAt, &topic.Score); err != nil {
 			return nil, err
 		}
 		topics = append(topics, topic)
@@ -92,7 +94,8 @@ func (r *TopicRepository) Search(query string) ([]*models.Topic, error) {
 	}
 
 	rows, err := r.db.Query(`
-		SELECT t.id, t.title, t.user_id, u.username, t.created_at, t.updated_at
+		SELECT t.id, t.title, t.user_id, u.username, t.created_at, t.updated_at,
+			COALESCE((SELECT SUM(value) FROM votes WHERE votable_type='topic' AND votable_id=t.id), 0) AS score
 		FROM topics t
 		LEFT JOIN users u ON t.user_id = u.id
 		WHERE MATCH(t.title) AGAINST(? IN NATURAL LANGUAGE MODE)
@@ -106,7 +109,7 @@ func (r *TopicRepository) Search(query string) ([]*models.Topic, error) {
 	topics := []*models.Topic{}
 	for rows.Next() {
 		topic := &models.Topic{}
-		if err := rows.Scan(&topic.ID, &topic.Title, &topic.UserID, &topic.Username, &topic.CreatedAt, &topic.UpdatedAt); err != nil {
+		if err := rows.Scan(&topic.ID, &topic.Title, &topic.UserID, &topic.Username, &topic.CreatedAt, &topic.UpdatedAt, &topic.Score); err != nil {
 			return nil, err
 		}
 		topics = append(topics, topic)

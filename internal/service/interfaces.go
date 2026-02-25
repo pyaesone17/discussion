@@ -28,3 +28,9 @@ type PostRepositoryInterface interface {
 	Update(id int64, req *models.UpdatePostRequest) (*models.Post, error)
 	Delete(id int64) error
 }
+
+type VoteRepositoryInterface interface {
+	Upsert(userID, votableID int64, votableType string, value int) error
+	Delete(userID, votableID int64, votableType string) error
+	GetScore(votableID int64, votableType string) (int64, error)
+}
