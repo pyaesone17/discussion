@@ -28,3 +28,16 @@ type PostRepositoryInterface interface {
 	Update(id int64, req *models.UpdatePostRequest) (*models.Post, error)
 	Delete(id int64) error
 }
+
+type VoteRepositoryInterface interface {
+	Upsert(userID, votableID int64, votableType string, value int) error
+	Delete(userID, votableID int64, votableType string) error
+	GetScore(votableID int64, votableType string) (int64, error)
+}
+
+type ReportRepositoryInterface interface {
+	Create(reportableID int64, reportableType string, req *models.CreateReportRequest) (*models.Report, error)
+	GetByID(id int64) (*models.Report, error)
+	GetAll() ([]*models.Report, error)
+	UpdateStatus(id int64, req *models.UpdateReportRequest) (*models.Report, error)
+}

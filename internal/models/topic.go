@@ -9,6 +9,7 @@ type Topic struct {
 	Username  string    `json:"username,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Score     int64     `json:"score"`
 }
 
 type CreateTopicRequest struct {

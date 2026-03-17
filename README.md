@@ -202,6 +202,9 @@ To remove all data volumes:
 docker compose down -v
 ```
 
+## Connect Mysql locally
+mysql -h 127.0.0.1 -P 3306 -u root -ppassword discussion_forum
+
 ## Next Steps
 
 - Add authentication and authorization

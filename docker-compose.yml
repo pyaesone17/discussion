@@ -1,22 +1,22 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - DATABASE_URL=root:password@tcp(mysql:3306)/discussion_forum?parseTime=true
-      - REDIS_URL=redis:6379
-      - PORT=8080
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    volumes:
-      - .:/app
-    restart: unless-stopped
+  # app:
+  #   build: .
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - DATABASE_URL=root:password@tcp(mysql:3306)/discussion_forum?parseTime=true
+  #     - REDIS_URL=redis:6379
+  #     - PORT=8080
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_started
+  #   volumes:
+  #     - .:/app
+  #   restart: unless-stopped
 
   mysql:
     image: mysql:8.0

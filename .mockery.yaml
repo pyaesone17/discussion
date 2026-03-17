@@ -10,3 +10,4 @@ packages:
       UserRepositoryInterface:
       TopicRepositoryInterface:
       PostRepositoryInterface:
+      ReportRepositoryInterface:

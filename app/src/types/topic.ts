@@ -3,6 +3,7 @@ export interface Topic {
   title: string
   user_id: number
   username?: string
+  score: number
   created_at: string
   updated_at: string
 }

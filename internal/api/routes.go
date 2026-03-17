@@ -11,6 +11,8 @@ func SetupRoutes(
 	userService *service.UserService,
 	topicService *service.TopicService,
 	postService *service.PostService,
+	voteService *service.VoteService,
+	reportService *service.ReportService,
 ) {
 	api := router.Group("/api/v1")
 
@@ -35,6 +37,18 @@ func SetupRoutes(
 	api.GET("/topics/:id/posts", postHandler.GetByTopicID)
 	api.PUT("/posts/:id", postHandler.Update)
 	api.DELETE("/posts/:id", postHandler.Delete)
+
+	voteHandler := NewVoteHandler(voteService)
+	api.POST("/topics/:id/vote", voteHandler.CastVote("topic"))
+	api.DELETE("/topics/:id/vote", voteHandler.RemoveVote("topic"))
+	api.POST("/posts/:id/vote", voteHandler.CastVote("post"))
+	api.DELETE("/posts/:id/vote", voteHandler.RemoveVote("post"))
+
+	reportHandler := NewReportHandler(reportService)
+	api.POST("/topics/:id/report", reportHandler.CreateReport("topic"))
+	api.POST("/posts/:id/report", reportHandler.CreateReport("post"))
+	api.GET("/reports", reportHandler.GetAll)
+	api.PUT("/reports/:id", reportHandler.UpdateStatus)
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
