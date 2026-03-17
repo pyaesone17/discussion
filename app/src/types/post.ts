@@ -4,6 +4,7 @@ export interface Post {
   user_id: number
   username?: string
   content: string
+  score: number
   created_at: string
   updated_at: string
 }
