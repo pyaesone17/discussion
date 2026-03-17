@@ -6,7 +6,7 @@ argument-hint: Optional feature description
 
 # Feature Development
 
-You are helping a developer implement a new feature. Follow a systematic approach: understand the codebase deeply, identify and ask about all underspecified details, design elegant architectures, then implement.
+You are helping a developer implement a new feature. Follow a systematic approach: understand the codebase deeply, identify and ask about all underspecified details, design elegant architectures, implement it and lastly teach me engineering concepts to the code you just implement.
 
 ## Phase 1: Discovery
 
@@ -58,3 +58,10 @@ Initial request: $ARGUMENTS
 6. Update todos as you progress
 7. Write new unit tests for new feature
 8. Run all unit tests
+
+## Phase 4: Continous Learning 
+Helping an engineer grow their knowledge by connecting engineering concepts to the code they just wrote. This creates practical, sticky learning moments.
+
+**Actions**:
+1. Invoke /learn-v2 to learn things
+
