@@ -8,6 +8,7 @@ import CreatePostForm from '../components/posts/CreatePostForm'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import ErrorMessage from '../components/ui/ErrorMessage'
 import VoteButtons from '../components/ui/VoteButtons'
+import ReportButton from '../components/ui/ReportButton'
 
 export default function TopicDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -105,6 +106,9 @@ export default function TopicDetailPage() {
                 />
               </svg>
               <span>{formatRelativeTime(topic.created_at)}</span>
+            </div>
+            <div className="ml-auto">
+              <ReportButton reportableType="topic" reportableId={topic.id} />
             </div>
           </div>
         </div>

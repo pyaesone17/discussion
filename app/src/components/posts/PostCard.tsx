@@ -1,6 +1,7 @@
 import type { Post } from '../../types'
 import { formatRelativeTime } from '../../utils/date'
 import VoteButtons from '../ui/VoteButtons'
+import ReportButton from '../ui/ReportButton'
 
 interface PostCardProps {
   post: Post
@@ -35,6 +36,9 @@ export default function PostCard({ post }: PostCardProps) {
           <span className="text-sm text-gray-500">{formatRelativeTime(post.created_at)}</span>
         </div>
         <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+      </div>
+      <div className="flex-shrink-0 self-start">
+        <ReportButton reportableType="post" reportableId={post.id} />
       </div>
     </div>
   )
